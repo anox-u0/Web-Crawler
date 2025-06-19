@@ -1,38 +1,53 @@
 # 🔗 Distributed Web Crawler
 
-A Python-based **distributed web crawler** designed for efficient, parallel website crawling. It features polite crawling practices, rate limiting, multithreaded processing, and structured data output in JSON format.
+A Python-based **distributed web crawler** designed to efficiently crawl a large number of websites in parallel. It handles politeness towards web servers, implements basic error handling with retries, and stores the extracted data in JSON files.
 
 ---
 
 ## ✨ Features
 
+* **⚙️ Configurable Settings**
+  Core crawler settings are loaded from `config.json`, including:
+
+  * `num_workers`: Number of concurrent threads
+  * `crawl_delay_seconds`: Delay between requests to the same domain
+  * `max_retries`: Retry attempts for failed requests
+  * `retry_backoff_factor`: Exponential backoff multiplier
+    A default `config.json` is generated if one doesn't exist.
+
 * **🔎 Configurable Start URL**
-  Specify the starting URL via the terminal when launching the script.
+  Specify the starting URL via terminal input when running the script.
 
 * **🔢 JSON File Limit**
-  Control how many pages to crawl by setting a maximum JSON file limit (or enter `0` for unlimited).
+  Control how many pages to crawl by setting a maximum JSON file count (or enter `0` for unlimited).
 
 * **⚡ Parallel Processing**
-  Uses Python's `threading` module to simulate a distributed crawler across multiple workers.
+  Uses Python’s `threading` module to simulate a distributed crawler across multiple workers on a single machine.
 
 * **🤝 Politeness & Rate Limiting**
 
-  * Respects `robots.txt` to avoid restricted paths.
-  * Includes configurable delay between requests to avoid overloading servers.
+  * Respects `robots.txt` to avoid disallowed paths.
+  * Enforces a configurable delay between requests to avoid overwhelming servers.
 
-* **🔢 Data Extraction**
-  For each page, extracts:
+* **🛡️ Enhanced Error Handling**
+  Features a retry mechanism with exponential backoff for improved reliability against network issues.
+
+* **🌐 Cross-Domain Crawling**
+  Follows HTTP and HTTPS links across different domains for broader exploration.
+
+* **📝 Data Extraction**
+  For each crawled page, the following information is extracted:
 
   * Page URL
-  * Page title
+  * Title
   * Plain text content
-  * All internal links
+  * All discoverable HTTP/HTTPS links
 
 * **📄 JSON Output**
-  Stores extracted data as separate `.json` files in a `crawled_data/` folder.
+  Saves each crawled page to an individual `.json` file in a `crawled_data/` directory.
 
 * **⏰ Formatted Timestamps**
-  Each JSON file includes a human-readable timestamp (e.g., `19 June 13:45:30`).
+  Each JSON file includes a timestamp in human-readable format (e.g., `19 June 13:45:30`).
 
 ---
 
@@ -40,7 +55,7 @@ A Python-based **distributed web crawler** designed for efficient, parallel webs
 
 ### ✅ Prerequisites
 
-Make sure you have **Python 3** and the following libraries:
+Ensure you have **Python 3** installed and the required libraries:
 
 ```bash
 pip install requests beautifulsoup4
@@ -52,7 +67,7 @@ pip install requests beautifulsoup4
    Save the crawler script as `crawler.py` (or any `.py` file).
 
 2. **Open Terminal**
-   Navigate to the script's directory.
+   Navigate to the directory containing the script.
 
 3. **Run the Script**
 
@@ -60,18 +75,30 @@ pip install requests beautifulsoup4
 python crawler.py
 ```
 
-4. **Follow Prompts**
+4. **Configuration File**
+   On first run, a `config.json` file is auto-generated in the same directory. You can edit it to customize:
+
+```json
+{
+  "num_workers": 5,
+  "crawl_delay_seconds": 1,
+  "max_retries": 3,
+  "retry_backoff_factor": 0.5
+}
+```
+
+5. **Follow Prompts**
 
    * Enter the starting URL (e.g., `http://quotes.toscrape.com/`)
-   * Enter the max number of JSON files (or `0` for unlimited)
+   * Enter the maximum number of JSON files to crawl (enter `0` for unlimited)
 
-The crawler will start and print progress logs in your terminal.
+The crawler will begin processing and display its progress in the terminal.
 
 ---
 
 ## 📂 Output
 
-All crawled pages are saved under `crawled_data/`. Each file contains structured data:
+All crawled pages are saved under a `crawled_data/` directory. Each `.json` file includes:
 
 ```json
 {
@@ -85,24 +112,4 @@ All crawled pages are saved under `crawled_data/`. Each file contains structured
   "timestamp": "19 June 13:45:30"
 }
 ```
-
----
-
-## ⚠️ Limitations & Future Improvements
-
-* **Single-Machine Simulation**
-  Threading is used for concurrency on a single machine. For true distributed crawling, consider message brokers like **RabbitMQ** or **Kafka** with **Celery**.
-
-* **Same-Domain Limitation**
-  Crawling is limited to internal links. Cross-domain support can be added if needed.
-
-* **No JavaScript Rendering**
-  JavaScript-heavy sites aren't fully supported. Consider integrating **Selenium** or **Playwright** for dynamic content.
-
-* **Basic Error Handling**
-  Retry logic is minimal. Production-grade systems should include backoff strategies and dead-letter queues.
-
-* **Hardcoded Configuration**
-  Move settings like delays and worker count into a config file (`config.yaml`, `settings.toml`, etc.) for flexibility.
-
 ---
